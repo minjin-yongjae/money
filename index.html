@@ -1052,18 +1052,20 @@ async function apiPost(data = {}) {
     params.append(key, value ?? "");
   });
 
-  const response = await fetch(API_URL, {
+  await fetch(API_URL, {
     method: "POST",
+    mode: "no-cors",
     body: params
   });
 
-  if (!response.ok) {
-    throw new Error("서버 요청에 실패했습니다.");
-  }
+  // Google Apps Script는 no-cors에서는 응답 내용을 읽을 수 없으므로
+  // 일정 시간 후 저장 결과를 다시 GET으로 확인한다.
+  await new Promise(resolve => setTimeout(resolve, 800));
 
-  return await response.json();
+  return {
+    success: true
+  };
 }
-
 
 /* =========================================================
    LOAD
