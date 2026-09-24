@@ -985,10 +985,22 @@ const ICONS = {
 
 let currentDate = new Date();
 
+let billingYear = currentDate.getFullYear();
+let billingMonth = currentDate.getMonth() + 1;
+
+if (currentDate.getDate() < 10) {
+  billingMonth--;
+
+  if (billingMonth === 0) {
+    billingMonth = 12;
+    billingYear--;
+  }
+}
+
 let currentMonth =
-  currentDate.getFullYear() +
+  billingYear +
   "-" +
-  String(currentDate.getMonth() + 1).padStart(2, "0");
+  String(billingMonth).padStart(2, "0");
 
 let transactions = [];
 let summary = null;
@@ -1156,11 +1168,32 @@ function renderAll() {
 
 function renderMonth() {
 
-  const [year, month] = currentMonth.split("-");
+  const [year, month] =
+    currentMonth.split("-").map(Number);
 
-  document.getElementById("monthLabel").textContent =
-    `${year}년 ${Number(month)}월`;
+  const startDate =
+    new Date(year, month - 1, 10);
 
+  const endDate =
+    new Date(year, month, 9);
+
+  const startText =
+    `${startDate.getMonth() + 1}.10`;
+
+  const endText =
+    `${endDate.getMonth() + 1}.09`;
+
+  document.getElementById("monthLabel").innerHTML = `
+    ${year}년 ${month}월 가계부
+    <div style="
+      font-size:11px;
+      color:#999;
+      font-weight:500;
+      margin-top:3px;
+    ">
+      ${startText} ~ ${endText}
+    </div>
+  `;
 }
 
 
