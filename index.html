@@ -1052,19 +1052,25 @@ async function apiPost(data = {}) {
     params.append(key, value ?? "");
   });
 
-  await fetch(API_URL, {
+  const response = await fetch(API_URL, {
     method: "POST",
-    mode: "no-cors",
     body: params
   });
 
-  // Google Apps Script는 no-cors에서는 응답 내용을 읽을 수 없으므로
-  // 일정 시간 후 저장 결과를 다시 GET으로 확인한다.
-  await new Promise(resolve => setTimeout(resolve, 800));
+  const text = await response.text();
 
-  return {
-    success: true
-  };
+  let result;
+
+  try {
+    result = JSON.parse(text);
+  } catch (error) {
+    console.error("Apps Script 응답:", text);
+    throw new Error(
+      "Google Apps Script에서 올바른 응답을 받지 못했습니다."
+    );
+  }
+
+  return result;
 }
 
 /* =========================================================
