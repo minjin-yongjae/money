@@ -160,7 +160,7 @@
 
     .budget-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 9px;
       margin-bottom: 22px;
     }
@@ -536,7 +536,7 @@
 
     .owner-buttons {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 7px;
     }
 
@@ -851,6 +851,13 @@
                   onclick="selectOwner('용재')">
             용재
           </button>
+          
+          <button type="button"
+                  class="owner-btn"
+                  data-owner="여비/경조사비"
+                  onclick="selectOwner('여비/경조사비')">
+          여비/경조사비
+          </button>
         </div>
       </div>
 
@@ -957,7 +964,6 @@ const DEFAULT_CATEGORIES = [
   "쇼핑",
   "의료",
   "여가",
-  "경조사",
   "기타"
 ];
 
@@ -965,6 +971,7 @@ const OWNER_LIST = [
   "생활비",
   "민진",
   "용재"
+  "여비/경조사비"
 ];
 
 const ICONS = {
