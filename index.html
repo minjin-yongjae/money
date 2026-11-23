@@ -799,7 +799,7 @@
   <div class="modal">
 
     <div class="modal-header">
-      <div class="modal-title" id="modalTitle">지출 추가</div>
+      <div class="modal-title" id="modalTitle">내역 추가</div>
       <button class="modal-close" onclick="closeModal()">×</button>
     </div>
 
@@ -933,7 +933,7 @@
 
 <!-- FAB -->
 <button class="fab" onclick="openAddModal()">
-  ＋ 지출 추가
+  ＋ 내역 추가
 </button>
 
 <!-- LOADING -->
@@ -1221,12 +1221,46 @@ function changeMonth(offset) {
 
 
 /* =========================================================
+   OWNER STATS (예산 - 지출 + 수입)
+   - 지출/수입은 거래내역에서 직접 계산
+   - 예산(budget)만 서버 summary 값 사용
+========================================================= */
+
+function getOwnerStats(owner) {
+
+  const item = summary?.[owner] || {};
+
+  const budget = Number(item.budget || 0);
+
+  let expense = 0;
+  let income = 0;
+
+  transactions.forEach(t => {
+
+    if ((t.owner || "") !== owner) return;
+
+    const amount = Number(t.amount || 0);
+
+    if (normalizeType(t.type) === "수입") {
+      income += amount;
+    } else {
+      expense += amount;
+    }
+
+  });
+
+  const available = budget + income;
+  const remaining = available - expense;
+
+  return { budget, expense, income, available, remaining };
+}
+
+
+/* =========================================================
    TOTAL
 ========================================================= */
 
 function renderTotal() {
-
-  const budgets = summary || {};
 
   let totalBudget = 0;
   let totalExpense = 0;
@@ -1234,17 +1268,11 @@ function renderTotal() {
 
   OWNER_LIST.forEach(owner => {
 
-    const item = budgets[owner] || {};
+    const stats = getOwnerStats(owner);
 
-    totalBudget += Number(item.budget || 0);
-    totalExpense += Number(item.expense || 0);
-
-    totalRemaining += Number(
-      item.balance ?? (
-        Number(item.budget || 0) -
-        Number(item.expense || 0)
-      )
-    );
+    totalBudget += stats.budget;
+    totalExpense += stats.expense;
+    totalRemaining += stats.remaining;
 
   });
 
@@ -1273,23 +1301,15 @@ function renderBudgets() {
 
   OWNER_LIST.forEach(owner => {
 
-    const item = summary?.[owner] || {};
-
-    const budget = Number(item.budget || 0);
-    const expense = Number(item.expense || 0);
-
-    const remaining =
-      Number(
-        item.balance ??
-        (budget - expense)
-      );
+    const { expense, income, available, remaining } =
+      getOwnerStats(owner);
 
     const percent =
-      budget > 0
-        ? Math.min((expense / budget) * 100, 100)
-        : 0;
+      available > 0
+        ? Math.min((expense / available) * 100, 100)
+        : (expense > 0 ? 100 : 0);
 
-    const isOver = expense > budget;
+    const isOver = remaining < 0;
 
     const card = document.createElement("div");
 
@@ -1303,7 +1323,9 @@ function renderBudgets() {
       </div>
 
       <div class="budget-used">
-        사용 ${formatWon(expense)}
+        사용 ${formatWon(expense)}${income > 0
+          ? ` · <span style="color:#4c8061;">수입 +${formatWon(income)}</span>`
+          : ""}
       </div>
 
       <div class="progress">
@@ -1621,7 +1643,7 @@ function openAddModal() {
   editingId = null;
 
   document.getElementById("modalTitle").textContent =
-    "지출 추가";
+    "내역 추가";
 
   document.getElementById("transactionForm").reset();
 
